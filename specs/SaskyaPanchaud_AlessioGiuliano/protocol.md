@@ -8,6 +8,8 @@ ACP uses TCP. The client establishes the connection. It has to know the IP addre
 
 The server closes the connection when the result of the operation has been sent, or after sending an error message if the expression sent by the client is invalid.
 
+The messages have to be encoded in UTF-8.
+
 ## Messages
 
 - &lt;OPERATION> &lt;operand1> &lt;operand2>
