@@ -4,7 +4,7 @@
 The goal of this protocol is to be able to perform binary mathematical operations on a server following statements sent by a client.
 
 ## Transport layer protocol
-ACP uses TCP. The clien establishes the connection. It has to know the IP address of the server. The server listens on TCP port 123456.
+ACP uses TCP. The client establishes the connection. It has to know the IP address of the server. The server listens on TCP port 123456.
 
 The server closes the connection when the result of the operation has been sent, or after sending an error message if the expression sent by the client is invalid.
 
@@ -25,7 +25,7 @@ The server closes the connection when the result of the operation has been sent,
 - INVALID OPERAND &lt;operand>
   - Error message from the server, indicating that an operand sent by the client are is not a valid number.
 - ZERO DIVISION
-  - Error messdage from the server, indicating that the client is attempting to divide by 0.
+  - Error message from the server, indicating that the client is attempting to divide by 0.
 - UNKNOWN ERROR
   - Generic error message sent by the server, indicating that an unexpected error happened during the process.
   
