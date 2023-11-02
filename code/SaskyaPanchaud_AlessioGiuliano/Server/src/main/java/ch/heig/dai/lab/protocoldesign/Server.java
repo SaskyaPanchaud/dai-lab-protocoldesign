@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.net.*;
 
 public class Server {
-    final int SERVER_PORT = 123456;
+    final int SERVER_PORT = 1234;
 
     enum OperationType {UNARY, BINARY, NARY, INVALID};
     enum Operation {ADD, SUBSTRACT, MULTIPLY, DIVIDE, INVALID};
@@ -14,51 +14,6 @@ public class Server {
         // Create a new server and run it
         Server server = new Server();
         server.run();
-    }
-
-    private void run() {
-        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT))
-        {
-            while (true) 
-            {
-                try (Socket socket = serverSocket.accept();
-                     var in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-                     var out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-                     )
-                {
-                    try 
-                    {
-                        String line;
-                        while ((line = in.readLine()) != null)
-                        {
-                            String[] args = line.split(" ");
-
-                            Operation operation = getOperation(args[0]);
-
-                            if (operation == Operation.INVALID)
-                            {
-                                out.write(invalidOperation(args[0]));
-                                continue;
-                            }
-
-                            out.write(operate(operation, getOperands(args)));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        out.write(unknownError(e));
-                    }
-                }
-                catch(IOException e)
-                {
-                    System.out.println("Server: socket ex.: " + e);
-                }
-            }
-        }
-        catch(IOException e)
-        {
-            System.out.println("Server: server socket ex.: " + e);
-        }
     }
 
     private String result(double result)
@@ -89,6 +44,68 @@ public class Server {
     private String unknownError(Exception e)
     {
         return "UNKNOWN ERROR " + e.toString();
+    }
+
+    private void run() {
+        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT))
+        {
+            while (true) 
+            {
+                try (Socket socket = serverSocket.accept();
+                     var in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                     var out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+                     )
+                {
+                    String result = "";
+                    String line;
+                    while ((line = in.readLine()) != null)
+                    {
+                        try
+                        {
+                            System.out.println(line);
+                            String[] args = line.split("[ ]");
+
+                            Operation operation = getOperation(args[0]);
+
+                            if (operation == Operation.INVALID)
+                            {
+                                result = invalidOperation(args[0]);
+                                continue;
+                            }
+                            else 
+                            {
+                                try 
+                                {
+                                    var operands = getOperands(args);
+                                    result = operate(operation, operands);
+                                }
+                                catch (NumberFormatException e)
+                                {
+                                    result = e.getMessage();
+                                }
+                            }
+                    }
+                    catch (Exception e)
+                    {
+                        result = unknownError(e);
+                    }
+                    finally
+                    {
+                        out.write(result + "\n");
+                        out.flush();
+                    }
+                }
+                }
+                catch(IOException e)
+                {
+                    System.out.println("Server: socket ex.: " + e);
+                }
+            }
+        }
+        catch(IOException e)
+        {
+            System.out.println("Server: server socket ex.: " + e);
+        }
     }
     
     // Convert the string operation to an enum type, allowing to change the name of the operation easily.
@@ -123,12 +140,19 @@ public class Server {
         }
     }
 
-    private String[] getOperands(String[] args)
+    private double[] getOperands(String[] args)
     {
-        var result = new String[args.length - 1];
+        var result = new double[args.length - 1];
         for (int i = 1; i < args.length; ++i)
-        {
-            result[i] = args[i];
+        {   
+            try
+            {
+                result[i - 1] = Double.parseDouble(args[i]);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new NumberFormatException(invalidOperand(args[i]));
+            }
         }
         return result;
     }
@@ -148,7 +172,7 @@ public class Server {
         }
     }
 
-    private String operate(Operation operation, String ... operands)
+    private String operate(Operation operation, double ... operands)
     {
         OperationType type = getOperationType(operation);
         int operandsCount = getOperandsCount(type);
@@ -157,20 +181,8 @@ public class Server {
             return invalidOperandsCount(operands.length);
         }
 
-        double[] dOperands = new double[operands.length];
-        for (int i = 0; i < operands.length; ++i)
-        {
-            try
-            {
-                dOperands[i] = Double.parseDouble(operands[i]);
-            }
-            catch (NumberFormatException e)
-            {
-                return invalidOperand(operands[i]);
-            }
-        }
-
         double result = 0;
+
         try
         {
             switch (type)
@@ -179,7 +191,7 @@ public class Server {
                     // TODO Implement or remove
                     break;
                 case BINARY:
-                    result = binaryOperation(dOperands[0], dOperands[1], operation);
+                    result = binaryOperation(operands[0], operands[1], operation);
                     break;
                 case NARY:
                     // TODO Implement or remove
@@ -207,6 +219,10 @@ public class Server {
             case MULTIPLY:
                 return lhs * rhs;
             case DIVIDE:
+                if (rhs == 0)
+                {
+                    throw new ArithmeticException("Zero division");
+                }
                 return lhs / rhs;
             default:
                 throw new RuntimeException("Invalid operation");
