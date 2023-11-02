@@ -15,30 +15,28 @@ public class Server {
     private void run() {
         try (var serverSocket = new ServerSocket(SERVER_PORT)) {
             while (true) {
-                try (Socket socket = serverSocket.accept(); var in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8)); var out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8))) {
-                    try {
-                        String line;
-                        while ((line = in.readLine()) != null) {
-                            String[] args = line.split(" ");
+                try (Socket socket = serverSocket.accept();
+                     var in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                     var out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8))) {
 
-                            Operation operation = getOperation(args[0]);
+                    String line;
 
-                            if (operation == Operation.INVALID) {
-                                out.write(invalidOperation(args[0]));
-                                continue;
-                            }
-
-                            out.write(operate(operation, getOperands(args)));
+                    while ((line = in.readLine()) != null) {
+                        String[] args = line.split(" ");
+                        Operation operation = getOperation(args[0]);
+                        if (operation == Operation.INVALID) {
+                            out.write(invalidOperation(args[0]));
+                            continue;
                         }
-                    } catch (Exception e) {
-                        out.write(unknownError(e));
+                        out.write(operate(operation, getOperands(args)));
+                        out.flush();
                     }
                 } catch (IOException e) {
                     System.out.println("Server: socket ex.: " + e);
                 }
             }
         } catch (IOException e) {
-            System.out.println("Server: server socket ex.: " + e);
+            System.out.println("Server: socket ex.: " + e);
         }
     }
 
@@ -96,7 +94,7 @@ public class Server {
 
     private String[] getOperands(String[] args) {
         var result = new String[args.length - 1];
-        System.arraycopy(args, 1, result, 1, args.length - 1);
+        System.arraycopy(args, 1, result, 0, args.length - 1);
         return result;
     }
 
@@ -130,6 +128,7 @@ public class Server {
         }
 
         double result = 0;
+
         try {
             switch (type) {
                 case UNARY:
