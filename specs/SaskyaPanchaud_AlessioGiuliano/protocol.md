@@ -4,9 +4,9 @@
 The goal of this protocol is to be able to perform binary mathematical operations on a server following statements sent by a client.
 
 ## Transport layer protocol
-ACP uses TCP. The client establishes the connection. It has to know the IP address of the server. The server listens on TCP port 123456.
+ACP uses TCP. The client establishes the connection. It has to know the IP address of the server. The server listens on TCP port 1234.
 
-The server closes the connection when the result of the operation has been sent, or after sending an error message if the expression sent by the client is invalid.
+The client closes the connection by sending the message "EXIT". The server will keep running, waiting for a new connection.
 
 The messages have to be encoded in UTF-8.
 
@@ -18,6 +18,8 @@ The messages have to be encoded in UTF-8.
     - SUBSTRACT
     - MULTIPLY
     - DIVIDE
+- EXIT 
+  - Message written by the client, closing the connection with the server and stopping the client.
 - RESULT &lt;result>
   - Message sent by the server containing the string with the operation's result.
 - UNKNOWN OPERATION &lt;OPERATION>
@@ -43,7 +45,13 @@ ADD 40 2 >
 
 < RESULT 42
 
-< Close TCP connection
+SUBSTRACT 100 36 >
+
+< RESULT 64
+
+EXIT
+
+Close TCP connection >
 
 ### Unsuccessful operations
 
@@ -55,8 +63,6 @@ MODULO 59 2 >
 
 < INVALID OPERATION MODULO
 
-< Close TCP connection
-
 ------------
 
 Client -------- Server
@@ -66,8 +72,6 @@ Open TCP connection >
 ADD 40 1 1 >
 
 < INVALID OPERANDS COUNT 3
-
-< Close TCP connection
 
 -----------
 
@@ -79,4 +83,3 @@ MULTIPLY 10 NOT_A_NUMBER >
 
 < INVALID OPERAND NOT_A_NUMBER
 
-< Close TCP connection
