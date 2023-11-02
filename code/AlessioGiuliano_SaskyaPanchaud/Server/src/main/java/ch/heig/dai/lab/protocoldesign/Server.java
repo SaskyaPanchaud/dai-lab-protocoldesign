@@ -25,10 +25,10 @@ public class Server {
                         String[] args = line.split(" ");
                         Operation operation = getOperation(args[0]);
                         if (operation == Operation.INVALID) {
-                            out.write(invalidOperation(args[0]));
+                            out.write(invalidOperation(args[0]) + "\n");
                             continue;
                         }
-                        out.write(operate(operation, getOperands(args)));
+                        out.write(operate(operation, getOperands(args)) + "\n");
                         out.flush();
                     }
                 } catch (IOException e) {
