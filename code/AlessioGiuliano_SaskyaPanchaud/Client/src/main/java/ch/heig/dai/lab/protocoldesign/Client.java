@@ -28,13 +28,17 @@ public class Client {
             System.out.println(instructions);
 
             Scanner input = new Scanner(System.in);
-            while (input.hasNext()) {
-                out.write(input.nextLine());
+            String line;
+            while (true) {
+                line = input.nextLine();
+                if (line.compareTo("EXIT") == 0) {
+                    break;
+                }
+                out.write(line + "\n");
                 out.flush();
+                System.out.println(in.readLine());
             }
-
-            System.out.println(in.read());
-
+            input.close();
         } catch (IOException e) {
             System.out.println("Client: exception while using client socket: " + e);
         }
