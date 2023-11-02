@@ -25,9 +25,10 @@ public class Client
                 StandardCharsets.UTF_8));
                 var out = new BufferedWriter(
                 new OutputStreamWriter(socket.getOutputStream(),
-                StandardCharsets.UTF_8)))
+                StandardCharsets.UTF_8));
+                var scanner = new Scanner(System.in);
+                )
         {
-            var scanner = new Scanner(System.in);
             String line = "";
             while (true)
             {
@@ -40,7 +41,6 @@ public class Client
                 out.flush();
                 System.out.println(in.readLine());
             }
-            scanner.close();
         }
         catch (IOException e)
         {

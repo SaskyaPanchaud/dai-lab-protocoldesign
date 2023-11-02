@@ -7,7 +7,7 @@ import java.net.*;
 public class Server {
     final int SERVER_PORT = 1234;
 
-    enum OperationType {UNARY, BINARY, NARY, INVALID};
+    enum OperationType {BINARY, INVALID};
     enum Operation {ADD, SUBSTRACT, MULTIPLY, DIVIDE, INVALID};
 
     public static void main(String[] args) {
@@ -62,7 +62,6 @@ public class Server {
                     {
                         try
                         {
-                            System.out.println(line);
                             String[] args = line.split("[ ]");
 
                             Operation operation = getOperation(args[0]);
@@ -70,13 +69,12 @@ public class Server {
                             if (operation == Operation.INVALID)
                             {
                                 result = invalidOperation(args[0]);
-                                continue;
                             }
                             else 
                             {
                                 try 
                                 {
-                                    var operands = getOperands(args);
+                                    double[] operands = getOperands(args);
                                     result = operate(operation, operands);
                                 }
                                 catch (NumberFormatException e)
@@ -161,12 +159,8 @@ public class Server {
     {
         switch (type)
         {
-            case UNARY:
-                return 1;
             case BINARY:
                 return 2;
-            case NARY:
-                return -1;
             default:
                 throw new RuntimeException("Invalid operation type");
         }
@@ -187,14 +181,8 @@ public class Server {
         {
             switch (type)
             {
-                case UNARY:
-                    // TODO Implement or remove
-                    break;
                 case BINARY:
                     result = binaryOperation(operands[0], operands[1], operation);
-                    break;
-                case NARY:
-                    // TODO Implement or remove
                     break;
                 default:
                     break;
